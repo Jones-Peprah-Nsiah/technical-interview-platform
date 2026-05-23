@@ -5,6 +5,7 @@ from database import engine, get_db
 from models import Base
 from schemas import UserCreate, UserResponse, UserLogin
 from crud import create_user, get_user_by_email
+from auth import verify_password
 
 Base.metadata.create_all(bind=engine)
 
@@ -33,7 +34,7 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
     if not existing_user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    if existing_user.password != user.password:
+    if not verify_password(user.password, existing_user.password):
         raise HTTPException(status_code=401, detail="Incorrect password")
 
     return {
