@@ -10,6 +10,9 @@ def create_user(db: Session, user: UserCreate):
         password=user.password
     )
 
+def get_user_by_email(db: Session, email: str):
+    return db.query(User).filter(User.email == email).first()
+
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
