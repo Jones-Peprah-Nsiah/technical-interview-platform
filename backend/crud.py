@@ -40,5 +40,22 @@ def get_rooms(db: Session):
     return db.query(Room).all()
 
 
+
+
 def get_room_by_id(db: Session, room_id: int):
     return db.query(Room).filter(Room.id == room_id).first()
+
+
+def delete_room(db: Session, room_id: int):
+    room = db.query(Room).filter(Room.id == room_id).first()
+
+    if not room:
+        return None
+
+    db.delete(room)
+    db.commit()
+
+    return room
+
+
+

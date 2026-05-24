@@ -15,7 +15,8 @@ from crud import (
     get_user_by_email,
     create_room,
     get_rooms,
-    get_room_by_id
+    get_room_by_id,
+    delete_room
 )
 from auth import verify_password
 
@@ -76,3 +77,21 @@ def get_single_room(room_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Room not found")
 
     return room
+
+
+@app.delete("/rooms/{room_id}")
+def delete_interview_room(
+    room_id: int,
+    db: Session = Depends(get_db)
+):
+    room = delete_room(db, room_id)
+
+    if not room:
+        raise HTTPException(
+            status_code=404,
+            detail="Room not found"
+        )
+
+    return {
+        "message": "Room deleted successfully"
+    }
