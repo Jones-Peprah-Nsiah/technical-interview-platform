@@ -14,7 +14,8 @@ from crud import (
     create_user,
     get_user_by_email,
     create_room,
-    get_rooms
+    get_rooms,
+    get_room_by_id
 )
 from auth import verify_password
 
@@ -66,3 +67,12 @@ def create_interview_room(room: RoomCreate, db: Session = Depends(get_db)):
 @app.get("/rooms", response_model=list[RoomResponse])
 def get_all_rooms(db: Session = Depends(get_db)):
     return get_rooms(db)
+
+@app.get("/rooms/{room_id}", response_model=RoomResponse)
+def get_single_room(room_id: int, db: Session = Depends(get_db)):
+    room = get_room_by_id(db, room_id)
+
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+
+    return room
