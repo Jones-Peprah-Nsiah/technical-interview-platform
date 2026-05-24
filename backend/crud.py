@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from models import User
+from models import User, Room
 from schemas import UserCreate
 from auth import hash_password
 
@@ -21,3 +21,20 @@ def create_user(db: Session, user: UserCreate):
 
 def get_user_by_email(db: Session, email: str):
     return db.query(User).filter(User.email == email).first()
+
+
+def create_room(db: Session, room):
+    new_room = Room(
+        title=room.title,
+        description=room.description
+    )
+
+    db.add(new_room)
+    db.commit()
+    db.refresh(new_room)
+
+    return new_room
+
+
+def get_rooms(db: Session):
+    return db.query(Room).all()

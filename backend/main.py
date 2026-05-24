@@ -3,8 +3,19 @@ from sqlalchemy.orm import Session
 
 from database import engine, get_db
 from models import Base
-from schemas import UserCreate, UserResponse, UserLogin
-from crud import create_user, get_user_by_email
+from schemas import (
+    UserCreate,
+    UserResponse,
+    UserLogin,
+    RoomCreate,
+    RoomResponse
+)
+from crud import (
+    create_user,
+    get_user_by_email,
+    create_room,
+    get_rooms
+)
 from auth import verify_password
 
 Base.metadata.create_all(bind=engine)
@@ -45,3 +56,13 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
             "email": existing_user.email
         }
     }
+
+
+@app.post("/rooms", response_model=RoomResponse)
+def create_interview_room(room: RoomCreate, db: Session = Depends(get_db)):
+    return create_room(db, room)
+
+
+@app.get("/rooms", response_model=list[RoomResponse])
+def get_all_rooms(db: Session = Depends(get_db)):
+    return get_rooms(db)

@@ -19,3 +19,19 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class RoomCreate(BaseModel):
+    title: str
+    description: str
+
+
+class RoomResponse(BaseModel):
+    id: int
+    title: str
+    description: str
+
+    class Config:
+        from_attributes = True
+        from_attributes = True
+
