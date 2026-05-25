@@ -26,7 +26,8 @@ def get_user_by_email(db: Session, email: str):
 def create_room(db: Session, room):
     new_room = Room(
         title=room.title,
-        description=room.description
+        description=room.description,
+        user_id=room.user_id
     )
 
     db.add(new_room)

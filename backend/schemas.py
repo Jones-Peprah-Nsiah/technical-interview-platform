@@ -24,14 +24,16 @@ class UserResponse(BaseModel):
 class RoomCreate(BaseModel):
     title: str
     description: str
+    user_id: int
 
 
 class RoomResponse(BaseModel):
     id: int
     title: str
     description: str
+    user_id: int
 
     class Config:
         from_attributes = True
-        from_attributes = True
+        
 
