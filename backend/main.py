@@ -15,6 +15,7 @@ from schemas import (
 from crud import (
     create_user,
     get_user_by_email,
+    get_user_by_id,
     create_room,
     get_rooms,
     get_room_by_id,
@@ -99,6 +100,16 @@ def join_interview_room(
     participant: ParticipantCreate,
     db: Session = Depends(get_db)
 ):
+    user = get_user_by_id(db, participant.user_id)
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    room = get_room_by_id(db, participant.room_id)
+
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+
     return join_room(db, participant)
 
 

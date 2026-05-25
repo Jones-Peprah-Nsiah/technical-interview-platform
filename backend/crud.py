@@ -22,6 +22,9 @@ def create_user(db: Session, user: UserCreate):
 def get_user_by_email(db: Session, email: str):
     return db.query(User).filter(User.email == email).first()
 
+def get_user_by_id(db: Session, user_id: int):
+    return db.query(User).filter(User.id == user_id).first()
+
 
 def create_room(db: Session, room):
     new_room = Room(
@@ -76,3 +79,4 @@ def get_room_participants(db: Session, room_id: int):
         .filter(Participant.room_id == room_id)
         .all()
     )
+
