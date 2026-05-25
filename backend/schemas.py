@@ -35,5 +35,17 @@ class RoomResponse(BaseModel):
 
     class Config:
         from_attributes = True
-        
 
+
+class ParticipantCreate(BaseModel):
+    user_id: int
+    room_id: int
+
+
+class ParticipantResponse(BaseModel):
+    id: int
+    user_id: int
+    room_id: int
+
+    class Config:
+        from_attributes = True

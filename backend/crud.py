@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from models import User, Room
+from models import User, Room, Participant
 from schemas import UserCreate
 from auth import hash_password
 
@@ -41,8 +41,6 @@ def get_rooms(db: Session):
     return db.query(Room).all()
 
 
-
-
 def get_room_by_id(db: Session, room_id: int):
     return db.query(Room).filter(Room.id == room_id).first()
 
@@ -59,4 +57,22 @@ def delete_room(db: Session, room_id: int):
     return room
 
 
+def join_room(db: Session, participant):
+    new_participant = Participant(
+        user_id=participant.user_id,
+        room_id=participant.room_id
+    )
 
+    db.add(new_participant)
+    db.commit()
+    db.refresh(new_participant)
+
+    return new_participant
+
+
+def get_room_participants(db: Session, room_id: int):
+    return (
+        db.query(Participant)
+        .filter(Participant.room_id == room_id)
+        .all()
+    )

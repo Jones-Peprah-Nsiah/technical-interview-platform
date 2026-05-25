@@ -8,7 +8,9 @@ from schemas import (
     UserResponse,
     UserLogin,
     RoomCreate,
-    RoomResponse
+    RoomResponse,
+    ParticipantCreate,
+    ParticipantResponse
 )
 from crud import (
     create_user,
@@ -16,7 +18,9 @@ from crud import (
     create_room,
     get_rooms,
     get_room_by_id,
-    delete_room
+    delete_room,
+    join_room,
+    get_room_participants
 )
 from auth import verify_password
 
@@ -69,6 +73,7 @@ def create_interview_room(room: RoomCreate, db: Session = Depends(get_db)):
 def get_all_rooms(db: Session = Depends(get_db)):
     return get_rooms(db)
 
+
 @app.get("/rooms/{room_id}", response_model=RoomResponse)
 def get_single_room(room_id: int, db: Session = Depends(get_db)):
     room = get_room_by_id(db, room_id)
@@ -80,18 +85,26 @@ def get_single_room(room_id: int, db: Session = Depends(get_db)):
 
 
 @app.delete("/rooms/{room_id}")
-def delete_interview_room(
-    room_id: int,
-    db: Session = Depends(get_db)
-):
+def delete_interview_room(room_id: int, db: Session = Depends(get_db)):
     room = delete_room(db, room_id)
 
     if not room:
-        raise HTTPException(
-            status_code=404,
-            detail="Room not found"
-        )
+        raise HTTPException(status_code=404, detail="Room not found")
 
-    return {
-        "message": "Room deleted successfully"
-    }
+    return {"message": "Room deleted successfully"}
+
+
+@app.post("/join-room", response_model=ParticipantResponse)
+def join_interview_room(
+    participant: ParticipantCreate,
+    db: Session = Depends(get_db)
+):
+    return join_room(db, participant)
+
+
+@app.get(
+    "/rooms/{room_id}/participants",
+    response_model=list[ParticipantResponse]
+)
+def get_participants(room_id: int, db: Session = Depends(get_db)):
+    return get_room_participants(db, room_id)
