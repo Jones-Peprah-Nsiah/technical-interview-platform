@@ -72,6 +72,16 @@ def join_room(db: Session, participant):
 
     return new_participant
 
+def get_participant(db: Session, user_id: int, room_id: int):
+    return (
+        db.query(Participant)
+        .filter(
+            Participant.user_id == user_id,
+            Participant.room_id == room_id
+        )
+        .first()
+    )
+
 
 def get_room_participants(db: Session, room_id: int):
     return (

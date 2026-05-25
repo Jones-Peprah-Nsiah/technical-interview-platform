@@ -21,7 +21,8 @@ from crud import (
     get_room_by_id,
     delete_room,
     join_room,
-    get_room_participants
+    get_room_participants,
+    get_participant
 )
 from auth import verify_password
 
@@ -109,6 +110,18 @@ def join_interview_room(
 
     if not room:
         raise HTTPException(status_code=404, detail="Room not found")
+
+    existing_participant = get_participant(
+        db,
+        participant.user_id,
+        participant.room_id
+    )
+
+    if existing_participant:
+        raise HTTPException(
+            status_code=400,
+            detail="User already joined this room"
+        )
 
     return join_room(db, participant)
 
