@@ -120,14 +120,29 @@ def get_single_room(room_id: int, db: Session = Depends(get_db)):
 
 
 @app.delete("/rooms/{room_id}")
-def delete_interview_room(room_id: int, db: Session = Depends(get_db)):
-    room = delete_room(db, room_id)
+def delete_interview_room(
+    room_id: int,
+    token: str,
+    db: Session = Depends(get_db)
+):
+    current_user = get_current_user_from_token(token, db)
+
+    room = get_room_by_id(db, room_id)
 
     if not room:
         raise HTTPException(status_code=404, detail="Room not found")
 
-    return {"message": "Room deleted successfully"}
+    if room.user_id != current_user.id:
+        raise HTTPException(
+            status_code=403,
+            detail="You are not allowed to delete this room"
+        )
 
+    delete_room(db, room_id)
+
+    return {
+        "message": "Room deleted successfully"
+    }
 
 @app.post("/join-room", response_model=ParticipantResponse)
 def join_interview_room(
