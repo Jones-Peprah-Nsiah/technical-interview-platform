@@ -26,3 +26,4 @@ class Participant(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, nullable=False)
     room_id = Column(Integer, nullable=False)
+    role = Column(String, nullable=False)

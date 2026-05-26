@@ -40,12 +40,14 @@ class RoomResponse(BaseModel):
 class ParticipantCreate(BaseModel):
     user_id: int
     room_id: int
+    role: str
 
 
 class ParticipantResponse(BaseModel):
     id: int
     user_id: int
     room_id: int
+    role: str
 
     class Config:
         from_attributes = True
