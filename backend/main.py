@@ -10,7 +10,8 @@ from schemas import (
     RoomCreate,
     RoomResponse,
     ParticipantCreate,
-    ParticipantResponse
+    ParticipantResponse,
+    TokenResponse
 )
 from crud import (
     create_user,
@@ -24,7 +25,7 @@ from crud import (
     get_room_participants,
     get_participant
 )
-from auth import verify_password
+from auth import verify_password, create_access_token
 
 Base.metadata.create_all(bind=engine)
 
@@ -46,7 +47,7 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     return create_user(db, user)
 
 
-@app.post("/login")
+@app.post("/login", response_model=TokenResponse)
 def login_user(user: UserLogin, db: Session = Depends(get_db)):
     existing_user = get_user_by_email(db, user.email)
 
@@ -56,13 +57,16 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
     if not verify_password(user.password, existing_user.password):
         raise HTTPException(status_code=401, detail="Incorrect password")
 
-    return {
-        "message": "Login successful",
-        "user": {
-            "id": existing_user.id,
-            "full_name": existing_user.full_name,
-            "email": existing_user.email
+    access_token = create_access_token(
+        data={
+            "sub": existing_user.email,
+            "user_id": existing_user.id
         }
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
     }
 
 
