@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
 
 from database import engine, get_db
@@ -25,16 +25,39 @@ from crud import (
     get_room_participants,
     get_participant
 )
-from auth import verify_password, create_access_token
+from auth import verify_password, create_access_token, verify_access_token
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
 
+def get_current_user_from_token(token: str, db: Session):
+    payload = verify_access_token(token)
+
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    user_id = payload.get("user_id")
+
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    user = get_user_by_id(db, user_id)
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return user
+
+
 @app.get("/")
 def home():
     return {"message": "Technical Interview Platform API"}
+
+@app.get("/me", response_model=UserResponse)
+def read_current_user(token: str, db: Session = Depends(get_db)):
+    return get_current_user_from_token(token, db)
 
 
 @app.post("/register", response_model=UserResponse)
