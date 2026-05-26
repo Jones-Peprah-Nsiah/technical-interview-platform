@@ -26,11 +26,11 @@ def get_user_by_id(db: Session, user_id: int):
     return db.query(User).filter(User.id == user_id).first()
 
 
-def create_room(db: Session, room):
+def create_room(db: Session, room, user_id: int):
     new_room = Room(
         title=room.title,
         description=room.description,
-        user_id=room.user_id
+        user_id=user_id
     )
 
     db.add(new_room)

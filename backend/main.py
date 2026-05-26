@@ -94,8 +94,14 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
 
 
 @app.post("/rooms", response_model=RoomResponse)
-def create_interview_room(room: RoomCreate, db: Session = Depends(get_db)):
-    return create_room(db, room)
+def create_interview_room(
+    room: RoomCreate,
+    token: str,
+    db: Session = Depends(get_db)
+):
+    current_user = get_current_user_from_token(token, db)
+
+    return create_room(db, room, current_user.id)
 
 
 @app.get("/rooms", response_model=list[RoomResponse])

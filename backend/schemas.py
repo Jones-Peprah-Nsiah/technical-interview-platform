@@ -24,7 +24,7 @@ class UserResponse(BaseModel):
 class RoomCreate(BaseModel):
     title: str
     description: str
-    user_id: int
+    
 
 
 class RoomResponse(BaseModel):
