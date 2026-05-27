@@ -12,7 +12,9 @@ from schemas import (
     ParticipantCreate,
     ParticipantResponse,
     TokenResponse,
-    RoomUpdate
+    RoomUpdate,
+    QuestionCreate,
+    QuestionResponse
 )
 from crud import (
     create_user,
@@ -25,8 +27,13 @@ from crud import (
     join_room,
     get_room_participants,
     get_participant,
-    update_room
+    update_room,
+    create_question,
+    get_questions_by_room,
+    get_question_by_id
 )
+
+
 from auth import verify_password, create_access_token, verify_access_token
 
 Base.metadata.create_all(bind=engine)
@@ -220,3 +227,66 @@ def update_interview_room(
         )
 
     return update_room(db, room_id, room_data)
+
+@app.post(
+    "/rooms/{room_id}/questions",
+    response_model=QuestionResponse
+)
+def add_question_to_room(
+    room_id: int,
+    question: QuestionCreate,
+    token: str,
+    db: Session = Depends(get_db)
+):
+    current_user = get_current_user_from_token(token, db)
+
+    if current_user.role != "interviewer":
+        raise HTTPException(
+            status_code=403,
+            detail="Only interviewers can add questions"
+        )
+
+    room = get_room_by_id(db, room_id)
+
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+
+    if room.user_id != current_user.id:
+        raise HTTPException(
+            status_code=403,
+            detail="You are not allowed to add questions to this room"
+        )
+
+    return create_question(db, room_id, question)
+
+
+@app.get(
+    "/rooms/{room_id}/questions",
+    response_model=list[QuestionResponse]
+)
+def get_room_questions(
+    room_id: int,
+    db: Session = Depends(get_db)
+):
+    room = get_room_by_id(db, room_id)
+
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+
+    return get_questions_by_room(db, room_id)
+
+
+@app.get(
+    "/questions/{question_id}",
+    response_model=QuestionResponse
+)
+def get_single_question(
+    question_id: int,
+    db: Session = Depends(get_db)
+):
+    question = get_question_by_id(db, question_id)
+
+    if not question:
+        raise HTTPException(status_code=404, detail="Question not found")
+
+    return question

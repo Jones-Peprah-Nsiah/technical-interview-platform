@@ -61,3 +61,19 @@ class TokenResponse(BaseModel):
 class RoomUpdate(BaseModel):
     title: str
     description: str
+
+class QuestionCreate(BaseModel):
+    title: str
+    description: str
+    difficulty: str
+
+
+class QuestionResponse(BaseModel):
+    id: int
+    room_id: int
+    title: str
+    description: str
+    difficulty: str
+
+    class Config:
+        from_attributes = True

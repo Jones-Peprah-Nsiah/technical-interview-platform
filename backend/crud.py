@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from models import User, Room, Participant
+from models import User, Room, Participant, Question
 from schemas import UserCreate
 from auth import hash_password
 
@@ -106,4 +106,34 @@ def update_room(db: Session, room_id: int, room_data):
     db.refresh(room)
 
     return room
+
+def create_question(db: Session, room_id: int, question):
+    new_question = Question(
+        room_id=room_id,
+        title=question.title,
+        description=question.description,
+        difficulty=question.difficulty
+    )
+
+    db.add(new_question)
+    db.commit()
+    db.refresh(new_question)
+
+    return new_question
+
+
+def get_questions_by_room(db: Session, room_id: int):
+    return (
+        db.query(Question)
+        .filter(Question.room_id == room_id)
+        .all()
+    )
+
+
+def get_question_by_id(db: Session, question_id: int):
+    return (
+        db.query(Question)
+        .filter(Question.id == question_id)
+        .first()
+    )
 
