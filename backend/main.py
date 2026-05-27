@@ -228,6 +228,25 @@ def update_interview_room(
 
     return update_room(db, room_id, room_data)
 
+
+
+
+@app.get(
+    "/rooms/{room_id}/questions",
+    response_model=list[QuestionResponse]
+)
+def get_room_questions(
+    room_id: int,
+    db: Session = Depends(get_db)
+):
+    room = get_room_by_id(db, room_id)
+
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+
+    return get_questions_by_room(db, room_id)
+
+
 @app.post(
     "/rooms/{room_id}/questions",
     response_model=QuestionResponse
@@ -238,6 +257,14 @@ def add_question_to_room(
     token: str,
     db: Session = Depends(get_db)
 ):
+    allowed_difficulties = ["easy", "medium", "hard"]
+
+    if question.difficulty not in allowed_difficulties:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid difficulty. Use easy, medium, or hard"
+        )
+
     current_user = get_current_user_from_token(token, db)
 
     if current_user.role != "interviewer":
@@ -258,35 +285,3 @@ def add_question_to_room(
         )
 
     return create_question(db, room_id, question)
-
-
-@app.get(
-    "/rooms/{room_id}/questions",
-    response_model=list[QuestionResponse]
-)
-def get_room_questions(
-    room_id: int,
-    db: Session = Depends(get_db)
-):
-    room = get_room_by_id(db, room_id)
-
-    if not room:
-        raise HTTPException(status_code=404, detail="Room not found")
-
-    return get_questions_by_room(db, room_id)
-
-
-@app.get(
-    "/questions/{question_id}",
-    response_model=QuestionResponse
-)
-def get_single_question(
-    question_id: int,
-    db: Session = Depends(get_db)
-):
-    question = get_question_by_id(db, question_id)
-
-    if not question:
-        raise HTTPException(status_code=404, detail="Question not found")
-
-    return question
