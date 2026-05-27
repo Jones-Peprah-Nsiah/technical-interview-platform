@@ -101,12 +101,13 @@ def create_interview_room(
 ):
     current_user = get_current_user_from_token(token, db)
 
+    if current_user.role != "interviewer":
+        raise HTTPException(
+            status_code=403,
+            detail="Only interviewers can create rooms"
+        )
+
     return create_room(db, room, current_user.id)
-
-
-@app.get("/rooms", response_model=list[RoomResponse])
-def get_all_rooms(db: Session = Depends(get_db)):
-    return get_rooms(db)
 
 
 @app.get("/rooms/{room_id}", response_model=RoomResponse)

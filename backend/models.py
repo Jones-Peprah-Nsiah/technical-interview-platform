@@ -9,7 +9,7 @@ class User(Base):
     full_name = Column(String, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     password = Column(String, nullable=False)
-
+    role = Column(String, nullable=False, default="candidate")
 
 class Room(Base):
     __tablename__ = "rooms"
