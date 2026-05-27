@@ -143,12 +143,19 @@ def delete_interview_room(
     return {
         "message": "Room deleted successfully"
     }
-
 @app.post("/join-room", response_model=ParticipantResponse)
 def join_interview_room(
     participant: ParticipantCreate,
     db: Session = Depends(get_db)
 ):
+    allowed_roles = ["candidate", "interviewer"]
+
+    if participant.role not in allowed_roles:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid role. Use candidate or interviewer"
+        )
+
     user = get_user_by_id(db, participant.user_id)
 
     if not user:
