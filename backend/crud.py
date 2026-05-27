@@ -92,3 +92,18 @@ def get_room_participants(db: Session, room_id: int):
         .all()
     )
 
+
+def update_room(db: Session, room_id: int, room_data):
+    room = db.query(Room).filter(Room.id == room_id).first()
+
+    if not room:
+        return None
+
+    room.title = room_data.title
+    room.description = room_data.description
+
+    db.commit()
+    db.refresh(room)
+
+    return room
+

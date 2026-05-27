@@ -11,7 +11,8 @@ from schemas import (
     RoomResponse,
     ParticipantCreate,
     ParticipantResponse,
-    TokenResponse
+    TokenResponse,
+    RoomUpdate
 )
 from crud import (
     create_user,
@@ -23,7 +24,8 @@ from crud import (
     delete_room,
     join_room,
     get_room_participants,
-    get_participant
+    get_participant,
+    update_room
 )
 from auth import verify_password, create_access_token, verify_access_token
 
@@ -188,3 +190,33 @@ def join_interview_room(
 )
 def get_participants(room_id: int, db: Session = Depends(get_db)):
     return get_room_participants(db, room_id)
+
+
+
+@app.put("/rooms/{room_id}", response_model=RoomResponse)
+def update_interview_room(
+    room_id: int,
+    room_data: RoomUpdate,
+    token: str,
+    db: Session = Depends(get_db)
+):
+    current_user = get_current_user_from_token(token, db)
+
+    if current_user.role != "interviewer":
+        raise HTTPException(
+            status_code=403,
+            detail="Only interviewers can update rooms"
+        )
+
+    room = get_room_by_id(db, room_id)
+
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+
+    if room.user_id != current_user.id:
+        raise HTTPException(
+            status_code=403,
+            detail="You are not allowed to update this room"
+        )
+
+    return update_room(db, room_id, room_data)
