@@ -1,7 +1,10 @@
 from datetime import datetime, timedelta, timezone
 
+from fastapi import HTTPException
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+from sqlalchemy.orm import Session
+
 
 
 SECRET_KEY = "your-secret-key-change-this-later"
@@ -53,3 +56,24 @@ def verify_access_token(token: str):
 
     except JWTError:
         return None
+
+
+def get_current_user_from_token(token: str, db: Session):
+
+    from crud import get_user_by_id
+    payload = verify_access_token(token)
+
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    user_id = payload.get("user_id")
+
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    user = get_user_by_id(db, user_id)
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return user

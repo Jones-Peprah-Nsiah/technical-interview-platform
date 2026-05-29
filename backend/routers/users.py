@@ -4,29 +4,11 @@ from sqlalchemy.orm import Session
 from database import get_db
 from schemas import UserCreate, UserResponse, UserLogin, TokenResponse
 from crud import create_user, get_user_by_email, get_user_by_id
-from auth import verify_password, create_access_token, verify_access_token
+from auth import verify_password, create_access_token, verify_access_token, get_current_user_from_token
 
 
 router = APIRouter(tags=["Users"])
 
-
-def get_current_user_from_token(token: str, db: Session):
-    payload = verify_access_token(token)
-
-    if not payload:
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-    user_id = payload.get("user_id")
-
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-    user = get_user_by_id(db, user_id)
-
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    return user
 
 
 @router.get("/me", response_model=UserResponse)

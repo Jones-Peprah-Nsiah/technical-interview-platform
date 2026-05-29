@@ -10,7 +10,7 @@ from crud import (
     get_question_by_id,
     delete_question
 )
-from routers.users import get_current_user_from_token
+from auth import get_current_user_from_token
 
 
 router = APIRouter(tags=["Questions"])
