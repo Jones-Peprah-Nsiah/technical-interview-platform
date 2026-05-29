@@ -30,7 +30,8 @@ from crud import (
     update_room,
     create_question,
     get_questions_by_room,
-    get_question_by_id
+    get_question_by_id,
+    delete_question
 )
 
 
@@ -297,3 +298,39 @@ def get_single_question(
         raise HTTPException(status_code=404, detail="Question not found")
 
     return question
+
+@app.delete("/questions/{question_id}")
+def delete_interview_question(
+    question_id: int,
+    token: str,
+    db: Session = Depends(get_db)
+):
+    current_user = get_current_user_from_token(token, db)
+
+    if current_user.role != "interviewer":
+        raise HTTPException(
+            status_code=403,
+            detail="Only interviewers can delete questions"
+        )
+
+    question = get_question_by_id(db, question_id)
+
+    if not question:
+        raise HTTPException(status_code=404, detail="Question not found")
+
+    room = get_room_by_id(db, question.room_id)
+
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+
+    if room.user_id != current_user.id:
+        raise HTTPException(
+            status_code=403,
+            detail="You are not allowed to delete this question"
+        )
+
+    delete_question(db, question_id)
+
+    return {
+        "message": "Question deleted successfully"
+    }

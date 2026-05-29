@@ -137,3 +137,13 @@ def get_question_by_id(db: Session, question_id: int):
         .first()
     )
 
+def delete_question(db: Session, question_id: int):
+    question = get_question_by_id(db, question_id)
+
+    if not question:
+        return None
+
+    db.delete(question)
+    db.commit()
+
+    return question
