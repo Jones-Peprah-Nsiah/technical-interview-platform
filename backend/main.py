@@ -285,3 +285,15 @@ def add_question_to_room(
         )
 
     return create_question(db, room_id, question)
+
+@app.get("/questions/{question_id}", response_model=QuestionResponse)
+def get_single_question(
+    question_id: int,
+    db: Session = Depends(get_db)
+):
+    question = get_question_by_id(db, question_id)
+
+    if not question:
+        raise HTTPException(status_code=404, detail="Question not found")
+
+    return question
