@@ -67,6 +67,10 @@ class QuestionCreate(BaseModel):
     description: str
     difficulty: str
 
+class QuestionUpdate(BaseModel):
+    title: str
+    description: str
+    difficulty: str
 
 class QuestionResponse(BaseModel):
     id: int

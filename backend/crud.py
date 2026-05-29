@@ -137,6 +137,8 @@ def get_question_by_id(db: Session, question_id: int):
         .first()
     )
 
+
+
 def delete_question(db: Session, question_id: int):
     question = get_question_by_id(db, question_id)
 
@@ -145,5 +147,20 @@ def delete_question(db: Session, question_id: int):
 
     db.delete(question)
     db.commit()
+
+    return question
+
+def update_question(db: Session, question_id: int, question_data):
+    question = get_question_by_id(db, question_id)
+
+    if not question:
+        return None
+
+    question.title = question_data.title
+    question.description = question_data.description
+    question.difficulty = question_data.difficulty
+
+    db.commit()
+    db.refresh(question)
 
     return question
