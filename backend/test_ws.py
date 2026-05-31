@@ -2,15 +2,37 @@ import asyncio
 import websockets
 
 
+async def receive_messages(websocket):
+    try:
+        async for message in websocket:
+            print("\nReceived:", message)
+            print("Type message: ", end="", flush=True)
+    except websockets.exceptions.ConnectionClosed:
+        print("\nConnection closed by server.")
+
+
+async def send_messages(websocket):
+    while True:
+        message = await asyncio.to_thread(input, "Type message: ")
+
+        if message.lower() == "exit":
+            print("Closing connection...")
+            await websocket.close()
+            break
+
+        await websocket.send(message)
+
+
 async def test_websocket():
     uri = "ws://127.0.0.1:8001/ws/rooms/1"
 
-    async with websockets.connect(uri) as websocket:
-        await websocket.send("Hello interview room")
+    async with websockets.connect(uri, ping_interval=None) as websocket:
+        print("Connected to room 1")
 
-        response = await websocket.recv()
-
-        print(response)
+        await asyncio.gather(
+            receive_messages(websocket),
+            send_messages(websocket)
+        )
 
 
 asyncio.run(test_websocket())
