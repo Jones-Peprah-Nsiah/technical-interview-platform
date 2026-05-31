@@ -9,7 +9,8 @@ from crud import (
     get_questions_by_room,
     get_question_by_id,
     delete_question,
-    update_question
+    update_question,
+    get_question_by_title_and_room
 )
 from auth import get_current_user_from_token
 
@@ -69,6 +70,18 @@ def add_question_to_room(
             status_code=403,
             detail="You are not allowed to add questions to this room"
         )
+    
+    existing_question = get_question_by_title_and_room(
+    db,
+    room_id,
+    question.title
+)
+
+    if existing_question:
+        raise HTTPException(
+        status_code=400,
+        detail="Question already exists in this room"
+    )
 
     return create_question(db, room_id, question)
 

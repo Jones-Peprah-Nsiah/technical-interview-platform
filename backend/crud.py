@@ -164,3 +164,13 @@ def update_question(db: Session, question_id: int, question_data):
     db.refresh(question)
 
     return question
+
+def get_question_by_title_and_room(db: Session, room_id: int, title: str):
+    return (
+        db.query(Question)
+        .filter(
+            Question.room_id == room_id,
+            Question.title == title
+        )
+        .first()
+    )
