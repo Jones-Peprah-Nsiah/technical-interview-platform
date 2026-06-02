@@ -1,4 +1,5 @@
 import asyncio
+import json
 import websockets
 
 
@@ -20,7 +21,12 @@ async def send_messages(websocket):
             await websocket.close()
             break
 
-        await websocket.send(message)
+        payload = {
+            "type": "chat_message",
+            "content": message
+        }
+
+        await websocket.send(json.dumps(payload))
 
 
 async def test_websocket():

@@ -1,3 +1,5 @@
+import json
+
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 
@@ -23,10 +25,10 @@ class ConnectionManager:
             if len(self.active_rooms[room_id]) == 0:
                 del self.active_rooms[room_id]
 
-    async def broadcast(self, room_id: int, message: str):
+    async def broadcast(self, room_id: int, message: dict):
         if room_id in self.active_rooms:
             for connection in self.active_rooms[room_id]:
-                await connection.send_text(message)
+                await connection.send_json(message)
 
 
 manager = ConnectionManager()
@@ -36,18 +38,59 @@ manager = ConnectionManager()
 async def websocket_room(websocket: WebSocket, room_id: int):
     await manager.connect(room_id, websocket)
 
+    await manager.broadcast(
+        room_id,
+        {
+            "type": "user_joined",
+            "room_id": room_id,
+            "message": "A user joined the room"
+        }
+    )
+
     try:
         while True:
-            message = await websocket.receive_text()
+            data = await websocket.receive_text()
+
+            try:
+                message = json.loads(data)
+            except json.JSONDecodeError:
+                await websocket.send_json(
+                    {
+                        "type": "error",
+                        "message": "Invalid JSON format"
+                    }
+                )
+                continue
+
+            message_type = message.get("type")
+            content = message.get("content")
+
+            if message_type not in ["code_update", "chat_message"]:
+                await websocket.send_json(
+                    {
+                        "type": "error",
+                        "message": "Invalid message type"
+                    }
+                )
+                continue
 
             await manager.broadcast(
                 room_id,
-                f"Room {room_id}: {message}"
+                {
+                    "type": message_type,
+                    "room_id": room_id,
+                    "content": content
+                }
             )
 
     except WebSocketDisconnect:
         manager.disconnect(room_id, websocket)
+
         await manager.broadcast(
             room_id,
-            "A user left the room"
+            {
+                "type": "user_left",
+                "room_id": room_id,
+                "message": "A user left the room"
+            }
         )
