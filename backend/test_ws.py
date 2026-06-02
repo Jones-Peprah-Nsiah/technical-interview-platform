@@ -14,17 +14,33 @@ async def receive_messages(websocket):
 
 async def send_messages(websocket):
     while True:
-        message = await asyncio.to_thread(input, "Type message: ")
+        message_type = await asyncio.to_thread(
+            input,
+            "Message type (chat/code/exit): "
+        )
 
-        if message.lower() == "exit":
+        if message_type.lower() == "exit":
             print("Closing connection...")
             await websocket.close()
             break
 
-        payload = {
-            "type": "chat_message",
-            "content": message
-        }
+        if message_type.lower() == "chat":
+            content = await asyncio.to_thread(input, "Chat message: ")
+            payload = {
+                "type": "chat_message",
+                "content": content
+            }
+
+        elif message_type.lower() == "code":
+            content = await asyncio.to_thread(input, "Code update: ")
+            payload = {
+                "type": "code_update",
+                "content": content
+            }
+
+        else:
+            print("Invalid option. Use chat, code, or exit.")
+            continue
 
         await websocket.send(json.dumps(payload))
 
