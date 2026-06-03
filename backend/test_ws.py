@@ -3,11 +3,14 @@ import json
 import websockets
 
 
+TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb25lczRAZXhhbXBsZS5jb20iLCJ1c2VyX2lkIjoyLCJleHAiOjE3ODA1MzA4ODd9.AXumxX3xcvmwH42bsYpKeHxZMSFZlaAnUc07MPuT_ag"
+
+
 async def receive_messages(websocket):
     try:
         async for message in websocket:
             print("\nReceived:", message)
-            print("Type message: ", end="", flush=True)
+            print("Message type (chat/code/exit): ", end="", flush=True)
     except websockets.exceptions.ConnectionClosed:
         print("\nConnection closed by server.")
 
@@ -46,7 +49,7 @@ async def send_messages(websocket):
 
 
 async def test_websocket():
-    uri = "ws://127.0.0.1:8001/ws/rooms/1"
+    uri = f"ws://127.0.0.1:8001/ws/rooms/1?token={TOKEN}"
 
     async with websockets.connect(uri, ping_interval=None) as websocket:
         print("Connected to room 1")

@@ -1,6 +1,10 @@
 import json
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
+from sqlalchemy.orm import Session
+
+from database import get_db
+from auth import get_current_user_from_token
 
 
 router = APIRouter(tags=["WebSockets"])
@@ -35,7 +39,18 @@ manager = ConnectionManager()
 
 
 @router.websocket("/ws/rooms/{room_id}")
-async def websocket_room(websocket: WebSocket, room_id: int):
+async def websocket_room(
+    websocket: WebSocket,
+    room_id: int,
+    token: str,
+    db: Session = Depends(get_db)
+):
+    try:
+        current_user = get_current_user_from_token(token, db)
+    except Exception:
+        await websocket.close(code=1008)
+        return
+
     await manager.connect(room_id, websocket)
 
     await manager.broadcast(
@@ -43,7 +58,9 @@ async def websocket_room(websocket: WebSocket, room_id: int):
         {
             "type": "user_joined",
             "room_id": room_id,
-            "message": "A user joined the room"
+            "user_id": current_user.id,
+            "role": current_user.role,
+            "message": f"{current_user.full_name} joined the room"
         }
     )
 
@@ -79,6 +96,8 @@ async def websocket_room(websocket: WebSocket, room_id: int):
                 {
                     "type": message_type,
                     "room_id": room_id,
+                    "user_id": current_user.id,
+                    "role": current_user.role,
                     "content": content
                 }
             )
@@ -91,6 +110,8 @@ async def websocket_room(websocket: WebSocket, room_id: int):
             {
                 "type": "user_left",
                 "room_id": room_id,
-                "message": "A user left the room"
+                "user_id": current_user.id,
+                "role": current_user.role,
+                "message": f"{current_user.full_name} left the room"
             }
         )
