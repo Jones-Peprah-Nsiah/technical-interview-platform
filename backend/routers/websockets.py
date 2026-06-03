@@ -1,3 +1,5 @@
+
+
 import json
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
@@ -5,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from auth import get_current_user_from_token
+from crud import get_room_by_id, get_participant
 
 
 router = APIRouter(tags=["WebSockets"])
@@ -48,6 +51,18 @@ async def websocket_room(
     try:
         current_user = get_current_user_from_token(token, db)
     except Exception:
+        await websocket.close(code=1008)
+        return
+
+    room = get_room_by_id(db, room_id)
+
+    if not room:
+        await websocket.close(code=1008)
+        return
+
+    participant = get_participant(db, current_user.id, room_id)
+
+    if room.user_id != current_user.id and not participant:
         await websocket.close(code=1008)
         return
 

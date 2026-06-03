@@ -3,7 +3,7 @@ import json
 import websockets
 
 
-TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb25lczRAZXhhbXBsZS5jb20iLCJ1c2VyX2lkIjoyLCJleHAiOjE3ODA1MzA4ODd9.AXumxX3xcvmwH42bsYpKeHxZMSFZlaAnUc07MPuT_ag"
+TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqNEBleGFtcGxlLmNvbSIsInVzZXJfaWQiOjQsImV4cCI6MTc4MDUzMTk4Mn0.QMsScVvBFyrObfBMOGK1JVp4zjekqSc9PCz8-NKLzcQ"
 
 
 async def receive_messages(websocket):
