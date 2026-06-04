@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from models import User, Room, Participant, Question
+from models import User, Room, Participant, Question, CodeSession
 from schemas import UserCreate
 from auth import hash_password
 
@@ -174,3 +174,31 @@ def get_question_by_title_and_room(db: Session, room_id: int, title: str):
         )
         .first()
     )
+
+def get_code_session_by_room(db: Session, room_id: int):
+    return db.query(CodeSession).filter(CodeSession.room_id == room_id).first()
+
+
+def create_or_update_code_session(db: Session, room_id: int, code_data):
+    code_session = get_code_session_by_room(db, room_id)
+
+    if not code_session:
+        code_session = CodeSession(
+            room_id=room_id,
+            code=code_data.code,
+            language=code_data.language
+        )
+
+        db.add(code_session)
+        db.commit()
+        db.refresh(code_session)
+
+        return code_session
+
+    code_session.code = code_data.code
+    code_session.language = code_data.language
+
+    db.commit()
+    db.refresh(code_session)
+
+    return code_session

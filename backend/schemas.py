@@ -81,3 +81,17 @@ class QuestionResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class CodeSessionCreate(BaseModel):
+    code: str
+    language: str
+
+
+class CodeSessionResponse(BaseModel):
+    id: int
+    room_id: int
+    code: str
+    language: str
+
+    class Config:
+        from_attributes = True

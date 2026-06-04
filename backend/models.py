@@ -36,3 +36,11 @@ class Question(Base):
     title = Column(String, nullable=False)
     description = Column(String, nullable=False)
     difficulty = Column(String, nullable=False)
+
+class CodeSession(Base):
+    __tablename__ = "code_sessions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    room_id = Column(Integer, nullable=False, unique=True)
+    code = Column(String, nullable=False, default="")
+    language = Column(String, nullable=False, default="python")
