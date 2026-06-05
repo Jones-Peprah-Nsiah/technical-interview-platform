@@ -1,9 +1,131 @@
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f4f6f8;
+* {
+  box-sizing: border-box;
 }
 
-div {
-  padding: 40px;
+body {
+  margin: 0;
+  font-family: Inter, Arial, sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: #111827;
+}
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.card {
+  width: 420px;
+  background: #ffffff;
+  padding: 36px;
+  border-radius: 18px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+}
+
+.logo {
+  width: 48px;
+  height: 48px;
+  background: #111827;
+  color: white;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  margin-bottom: 22px;
+}
+
+.card h1 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.1;
+  color: #111827;
+}
+
+.subtitle {
+  margin-top: 10px;
+  margin-bottom: 28px;
+  color: #6b7280;
+  font-size: 15px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.input-group {
+  text-align: left;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
+input {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 15px;
+  background: #f9fafb;
+  color: #111827;
+}
+
+input:focus {
+  outline: none;
+  border-color: #2563eb;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+button {
+  margin-top: 6px;
+  padding: 14px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+.message {
+  margin-top: 18px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #ecfdf5;
+  color: #047857;
+  font-weight: 700;
+  text-align: center;
+}
+
+.token-box {
+  margin-top: 18px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #4b5563;
+  word-break: break-all;
+}
+
+.token-box strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #111827;
 }
