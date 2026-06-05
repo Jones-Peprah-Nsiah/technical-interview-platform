@@ -3,7 +3,7 @@ import json
 import websockets
 
 
-TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqNEBleGFtcGxlLmNvbSIsInVzZXJfaWQiOjQsImV4cCI6MTc4MDUzMTk4Mn0.QMsScVvBFyrObfBMOGK1JVp4zjekqSc9PCz8-NKLzcQ"
+TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb25lczRAZXhhbXBsZS5jb20iLCJ1c2VyX2lkIjoyLCJleHAiOjE3ODA2MjYzMTh9.18fYPwa9qjPUT-MkY-1RUEOz_jpQ_m0VkyU-UegLJ0Y"
 
 
 async def receive_messages(websocket):
@@ -29,6 +29,7 @@ async def send_messages(websocket):
 
         if message_type.lower() == "chat":
             content = await asyncio.to_thread(input, "Chat message: ")
+
             payload = {
                 "type": "chat_message",
                 "content": content
@@ -36,9 +37,11 @@ async def send_messages(websocket):
 
         elif message_type.lower() == "code":
             content = await asyncio.to_thread(input, "Code update: ")
+
             payload = {
                 "type": "code_update",
-                "content": content
+                "content": content,
+                "language": "python"
             }
 
         else:

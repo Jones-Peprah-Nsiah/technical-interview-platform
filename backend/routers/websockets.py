@@ -1,5 +1,3 @@
-
-
 import json
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
@@ -7,7 +5,12 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from auth import get_current_user_from_token
-from crud import get_room_by_id, get_participant
+from schemas import CodeSessionCreate
+from crud import (
+    get_room_by_id,
+    get_participant,
+    create_or_update_code_session
+)
 
 
 router = APIRouter(tags=["WebSockets"])
@@ -106,16 +109,39 @@ async def websocket_room(
                 )
                 continue
 
-            await manager.broadcast(
-                room_id,
-                {
-                    "type": message_type,
-                    "room_id": room_id,
-                    "user_id": current_user.id,
-                    "role": current_user.role,
-                    "content": content
-                }
-            )
+            if message_type == "code_update":
+                language = message.get("language", "python")
+
+                code_data = CodeSessionCreate(
+                    code=content,
+                    language=language
+                )
+
+                create_or_update_code_session(db, room_id, code_data)
+
+                await manager.broadcast(
+                    room_id,
+                    {
+                        "type": message_type,
+                        "room_id": room_id,
+                        "user_id": current_user.id,
+                        "role": current_user.role,
+                        "content": content,
+                        "language": language
+                    }
+                )
+
+            else:
+                await manager.broadcast(
+                    room_id,
+                    {
+                        "type": message_type,
+                        "room_id": room_id,
+                        "user_id": current_user.id,
+                        "role": current_user.role,
+                        "content": content
+                    }
+                )
 
     except WebSocketDisconnect:
         manager.disconnect(room_id, websocket)
