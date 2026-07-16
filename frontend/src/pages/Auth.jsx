@@ -6,6 +6,7 @@ function Auth({ onAuthenticated }) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -16,7 +17,12 @@ function Auth({ onAuthenticated }) {
 
     try {
       if (mode === "register") {
-        await api.register({ full_name: fullName, email, password });
+        await api.register({
+          full_name: fullName,
+          email,
+          password,
+          invite_code: inviteCode || undefined,
+        });
       }
 
       const { access_token } = await api.login({ email, password });
@@ -77,6 +83,22 @@ function Auth({ onAuthenticated }) {
               required
             />
           </div>
+
+          {mode === "register" && (
+            <div className="input-group">
+              <label>Interviewer invite code (optional)</label>
+              <input
+                type="text"
+                placeholder="Leave blank to register as a candidate"
+                value={inviteCode}
+                onChange={(e) => setInviteCode(e.target.value)}
+              />
+              <p className="hint">
+                Have an invite code from your team? Enter it to register as an
+                interviewer instead of a candidate.
+              </p>
+            </div>
+          )}
 
           <button type="submit" disabled={loading}>
             {loading ? "Please wait..." : mode === "login" ? "Login" : "Create account"}

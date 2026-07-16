@@ -8,3 +8,4 @@ SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-this-later")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+INTERVIEWER_INVITE_CODE = os.getenv("INTERVIEWER_INVITE_CODE", "")

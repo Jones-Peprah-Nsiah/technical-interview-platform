@@ -1,6 +1,9 @@
+import secrets
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from config import INTERVIEWER_INVITE_CODE
 from database import get_db
 from schemas import UserCreate, UserResponse, UserLogin, TokenResponse
 from crud import create_user, get_user_by_email, get_user_by_id
@@ -23,7 +26,13 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    return create_user(db, user)
+    role = "candidate"
+    if INTERVIEWER_INVITE_CODE and secrets.compare_digest(
+        user.invite_code or "", INTERVIEWER_INVITE_CODE
+    ):
+        role = "interviewer"
+
+    return create_user(db, user, role)
 
 
 @router.post("/login", response_model=TokenResponse)

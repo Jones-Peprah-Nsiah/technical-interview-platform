@@ -78,8 +78,8 @@ function Dashboard({ token, user, onEnterRoom, onLogout }) {
         {!isInterviewer && (
           <p className="notice">
             Your account has the <strong>candidate</strong> role, so room creation is
-            disabled — the backend currently has no way to promote an account to
-            interviewer. You can still join an existing room below.
+            disabled. If you have an interviewer invite code, log out and register a
+            new account with it. You can still join an existing room below.
           </p>
         )}
 

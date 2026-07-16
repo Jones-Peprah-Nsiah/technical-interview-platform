@@ -77,7 +77,7 @@ def get_current_user_from_token(token: str, db: Session):
     return user
 
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends()):
+def get_current_user(token: str = Depends(oauth2_scheme)):
     """Dependency to get current user from JWT token"""
     from crud import get_user_by_id
     from database import SessionLocal

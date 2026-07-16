@@ -5,12 +5,12 @@ from schemas import UserCreate
 from auth import hash_password
 
 
-def create_user(db: Session, user: UserCreate):
+def create_user(db: Session, user: UserCreate, role: str = "candidate"):
     new_user = User(
         full_name=user.full_name,
         email=user.email,
         password=hash_password(user.password),
-        role="candidate"
+        role=role
     )
 
     db.add(new_user)

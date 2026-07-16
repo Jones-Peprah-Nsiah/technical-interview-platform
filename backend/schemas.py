@@ -5,6 +5,7 @@ class UserCreate(BaseModel):
     full_name: str
     email: EmailStr
     password: str
+    invite_code: str | None = None
 
 
 class UserLogin(BaseModel):
