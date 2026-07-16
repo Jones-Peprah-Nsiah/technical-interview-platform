@@ -12,7 +12,7 @@ from crud import (
     update_question,
     get_question_by_title_and_room
 )
-from auth import get_current_user_from_token
+from auth import get_current_user
 
 
 router = APIRouter(tags=["Questions"])
@@ -41,7 +41,7 @@ def get_room_questions(
 def add_question_to_room(
     room_id: int,
     question: QuestionCreate,
-    token: str,
+    current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     allowed_difficulties = ["easy", "medium", "hard"]
@@ -51,8 +51,6 @@ def add_question_to_room(
             status_code=400,
             detail="Invalid difficulty. Use easy, medium, or hard"
         )
-
-    current_user = get_current_user_from_token(token, db)
 
     if current_user.role != "interviewer":
         raise HTTPException(
@@ -102,11 +100,9 @@ def get_single_question(
 @router.delete("/questions/{question_id}")
 def delete_interview_question(
     question_id: int,
-    token: str,
+    current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    current_user = get_current_user_from_token(token, db)
-
     if current_user.role != "interviewer":
         raise HTTPException(
             status_code=403,
@@ -139,7 +135,7 @@ def delete_interview_question(
 def update_interview_question(
     question_id: int,
     question_data: QuestionUpdate,
-    token: str,
+    current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     allowed_difficulties = ["easy", "medium", "hard"]
@@ -149,8 +145,6 @@ def update_interview_question(
             status_code=400,
             detail="Invalid difficulty. Use easy, medium, or hard"
         )
-
-    current_user = get_current_user_from_token(token, db)
 
     if current_user.role != "interviewer":
         raise HTTPException(

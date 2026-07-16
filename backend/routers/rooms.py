@@ -9,7 +9,7 @@ from crud import (
     delete_room,
     update_room
 )
-from auth import get_current_user_from_token
+from auth import get_current_user
 
 router = APIRouter(tags=["Rooms"])
 
@@ -17,11 +17,9 @@ router = APIRouter(tags=["Rooms"])
 @router.post("/rooms", response_model=RoomResponse)
 def create_interview_room(
     room: RoomCreate,
-    token: str,
+    current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    current_user = get_current_user_from_token(token, db)
-
     if current_user.role != "interviewer":
         raise HTTPException(
             status_code=403,
@@ -44,11 +42,9 @@ def get_single_room(room_id: int, db: Session = Depends(get_db)):
 @router.delete("/rooms/{room_id}")
 def delete_interview_room(
     room_id: int,
-    token: str,
+    current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    current_user = get_current_user_from_token(token, db)
-
     room = get_room_by_id(db, room_id)
 
     if not room:
@@ -71,11 +67,9 @@ def delete_interview_room(
 def update_interview_room(
     room_id: int,
     room_data: RoomUpdate,
-    token: str,
+    current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    current_user = get_current_user_from_token(token, db)
-
     if current_user.role != "interviewer":
         raise HTTPException(
             status_code=403,

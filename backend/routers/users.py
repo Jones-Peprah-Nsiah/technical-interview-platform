@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from schemas import UserCreate, UserResponse, UserLogin, TokenResponse
 from crud import create_user, get_user_by_email, get_user_by_id
-from auth import verify_password, create_access_token, verify_access_token, get_current_user_from_token
+from auth import verify_password, create_access_token, get_current_user
 
 
 router = APIRouter(tags=["Users"])
@@ -12,8 +12,8 @@ router = APIRouter(tags=["Users"])
 
 
 @router.get("/me", response_model=UserResponse)
-def read_current_user(token: str, db: Session = Depends(get_db)):
-    return get_current_user_from_token(token, db)
+def read_current_user(current_user = Depends(get_current_user)):
+    return current_user
 
 
 @router.post("/register", response_model=UserResponse)

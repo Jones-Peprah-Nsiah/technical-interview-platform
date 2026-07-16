@@ -1,86 +1,63 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
+import Auth from "./pages/Auth";
+import Dashboard from "./pages/Dashboard";
+import Room from "./pages/Room";
+import { api } from "./api";
 
 function App() {
-  const [email, setEmail] = useState("jones4@example.com");
-  const [password, setPassword] = useState("w");
-  const [token, setToken] = useState("");
-  const [message, setMessage] = useState("");
+  const [session, setSession] = useState(null); // { token, user } | null
+  const [activeRoomId, setActiveRoomId] = useState(null);
+  const [restoring, setRestoring] = useState(() => !!localStorage.getItem("token"));
 
-  async function handleLogin(e) {
-    e.preventDefault();
+  // Restore session from a saved token on first load, if one exists
+  useEffect(() => {
+    const savedToken = localStorage.getItem("token");
+    if (!savedToken) return;
 
-    try {
-      const response = await fetch("http://127.0.0.1:8001/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-        }),
-      });
+    api
+      .me(savedToken)
+      .then((user) => setSession({ token: savedToken, user }))
+      .catch(() => localStorage.removeItem("token"))
+      .finally(() => setRestoring(false));
+  }, []);
 
-      const data = await response.json();
+  function handleLogout() {
+    localStorage.removeItem("token");
+    setSession(null);
+    setActiveRoomId(null);
+  }
 
-      if (!response.ok) {
-        setMessage(data.detail || "Login failed");
-        return;
-      }
+  if (restoring) {
+    return (
+      <div className="page">
+        <p className="subtitle">Loading...</p>
+      </div>
+    );
+  }
 
-      setToken(data.access_token);
-      localStorage.setItem("token", data.access_token);
-      setMessage("Login successful");
-    } catch (error) {
-      setMessage("Cannot connect to backend");
-    }
+  if (!session) {
+    return <Auth onAuthenticated={setSession} />;
+  }
+
+  if (activeRoomId) {
+    return (
+      <Room
+        roomId={activeRoomId}
+        token={session.token}
+        user={session.user}
+        onLeave={() => setActiveRoomId(null)}
+      />
+    );
   }
 
   return (
-    <div className="page">
-      <div className="card">
-        <div className="logo">TIP</div>
-
-        <h1>Technical Interview Platform</h1>
-        <p className="subtitle">
-          Sign in to manage interview rooms, questions, and live coding sessions.
-        </p>
-
-        <form onSubmit={handleLogin}>
-          <div className="input-group">
-            <label>Email</label>
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-
-          <div className="input-group">
-            <label>Password</label>
-            <input
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-
-          <button type="submit">Login</button>
-        </form>
-
-        {message && <p className="message">{message}</p>}
-
-        {token && (
-          <div className="token-box">
-            <strong>Token saved</strong>
-            <span>{token.slice(0, 60)}...</span>
-          </div>
-        )}
-      </div>
-    </div>
+    <Dashboard
+      token={session.token}
+      user={session.user}
+      onEnterRoom={setActiveRoomId}
+      onLogout={handleLogout}
+    />
   );
 }
 
