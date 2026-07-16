@@ -3,6 +3,8 @@ import { WS_BASE_URL, api } from "../api";
 
 const LANGUAGES = ["python", "javascript", "typescript", "java", "cpp", "go"];
 
+const DIFFICULTIES = ["easy", "medium", "hard"];
+
 function Room({ roomId, token, user, onLeave }) {
   const [room, setRoom] = useState(null);
   const [participants, setParticipants] = useState([]);
@@ -12,9 +14,22 @@ function Room({ roomId, token, user, onLeave }) {
   const [chatInput, setChatInput] = useState("");
   const [events, setEvents] = useState([]); // chat + system messages, newest last
 
+  const [questions, setQuestions] = useState([]);
+  const [activeQuestion, setActiveQuestion] = useState(null);
+  const [newQuestion, setNewQuestion] = useState({
+    title: "",
+    description: "",
+    difficulty: "easy",
+  });
+  const [questionError, setQuestionError] = useState("");
+  const [addingQuestion, setAddingQuestion] = useState(false);
+
   const socketRef = useRef(null);
   const skipNextBroadcastRef = useRef(false);
   const eventsEndRef = useRef(null);
+
+  const canManageQuestions =
+    room && user.role === "interviewer" && room.user_id === user.id;
 
   // Load room metadata + current participants once
   useEffect(() => {
@@ -28,6 +43,11 @@ function Room({ roomId, token, user, onLeave }) {
     api
       .getParticipants(roomId)
       .then((data) => !cancelled && setParticipants(data))
+      .catch(() => {});
+
+    api
+      .listQuestions(roomId)
+      .then((data) => !cancelled && setQuestions(data))
       .catch(() => {});
 
     return () => {
@@ -61,6 +81,10 @@ function Room({ roomId, token, user, onLeave }) {
           skipNextBroadcastRef.current = true;
           setCode(message.content ?? "");
           if (message.language) setLanguage(message.language);
+          break;
+
+        case "question_selected":
+          setActiveQuestion(message.content ?? null);
           break;
 
         case "chat_message":
@@ -135,6 +159,27 @@ function Room({ roomId, token, user, onLeave }) {
     setChatInput("");
   }
 
+  async function handleAddQuestion(e) {
+    e.preventDefault();
+    setQuestionError("");
+    setAddingQuestion(true);
+
+    try {
+      const question = await api.createQuestion(roomId, newQuestion, token);
+      setQuestions((prev) => [...prev, question]);
+      setNewQuestion({ title: "", description: "", difficulty: "easy" });
+    } catch (err) {
+      setQuestionError(err.message || "Could not add question");
+    } finally {
+      setAddingQuestion(false);
+    }
+  }
+
+  function handleSelectQuestion(question) {
+    setActiveQuestion(question);
+    sendMessage({ type: "question_selected", content: question });
+  }
+
   return (
     <div className="room-page">
       <header className="room-header">
@@ -154,6 +199,18 @@ function Room({ roomId, token, user, onLeave }) {
 
       <div className="room-body">
         <section className="editor-panel">
+          {activeQuestion && (
+            <div className="active-question">
+              <div className="active-question-header">
+                <strong>{activeQuestion.title}</strong>
+                <span className={`badge difficulty-${activeQuestion.difficulty}`}>
+                  {activeQuestion.difficulty}
+                </span>
+              </div>
+              <p>{activeQuestion.description}</p>
+            </div>
+          )}
+
           <div className="editor-toolbar">
             <span>Live shared editor</span>
             <select value={language} onChange={handleLanguageChange}>
@@ -174,6 +231,76 @@ function Room({ roomId, token, user, onLeave }) {
         </section>
 
         <aside className="side-panel">
+          <div className="questions-box">
+            <h3>Questions</h3>
+            <ul className="questions-list">
+              {questions.map((q) => (
+                <li
+                  key={q.id}
+                  className={
+                    activeQuestion?.id === q.id ? "question-item active" : "question-item"
+                  }
+                >
+                  <div className="question-item-main">
+                    <span>{q.title}</span>
+                    <span className={`badge difficulty-${q.difficulty}`}>
+                      {q.difficulty}
+                    </span>
+                  </div>
+                  {canManageQuestions && activeQuestion?.id !== q.id && (
+                    <button
+                      type="button"
+                      className="secondary-button small"
+                      onClick={() => handleSelectQuestion(q)}
+                    >
+                      Use this question
+                    </button>
+                  )}
+                </li>
+              ))}
+              {questions.length === 0 && <li className="muted">No questions yet</li>}
+            </ul>
+
+            {canManageQuestions && (
+              <form className="add-question-form" onSubmit={handleAddQuestion}>
+                <input
+                  type="text"
+                  placeholder="Question title"
+                  value={newQuestion.title}
+                  onChange={(e) =>
+                    setNewQuestion((prev) => ({ ...prev, title: e.target.value }))
+                  }
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Description"
+                  value={newQuestion.description}
+                  onChange={(e) =>
+                    setNewQuestion((prev) => ({ ...prev, description: e.target.value }))
+                  }
+                  required
+                />
+                <select
+                  value={newQuestion.difficulty}
+                  onChange={(e) =>
+                    setNewQuestion((prev) => ({ ...prev, difficulty: e.target.value }))
+                  }
+                >
+                  {DIFFICULTIES.map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+                <button type="submit" disabled={addingQuestion}>
+                  {addingQuestion ? "Adding..." : "Add question"}
+                </button>
+                {questionError && <p className="message error">{questionError}</p>}
+              </form>
+            )}
+          </div>
+
           <div className="participants-box">
             <h3>Participants</h3>
             <ul>

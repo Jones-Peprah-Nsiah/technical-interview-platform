@@ -29,16 +29,26 @@ class ConnectionManager:
         self.active_rooms[room_id].append(websocket)
 
     def disconnect(self, room_id: int, websocket: WebSocket):
-        if room_id in self.active_rooms:
+        if room_id in self.active_rooms and websocket in self.active_rooms[room_id]:
             self.active_rooms[room_id].remove(websocket)
 
             if len(self.active_rooms[room_id]) == 0:
                 del self.active_rooms[room_id]
 
     async def broadcast(self, room_id: int, message: dict):
-        if room_id in self.active_rooms:
-            for connection in self.active_rooms[room_id]:
+        if room_id not in self.active_rooms:
+            return
+
+        dead_connections = []
+
+        for connection in self.active_rooms[room_id]:
+            try:
                 await connection.send_json(message)
+            except Exception:
+                dead_connections.append(connection)
+
+        for connection in dead_connections:
+            self.disconnect(room_id, connection)
 
 
 manager = ConnectionManager()
@@ -71,18 +81,18 @@ async def websocket_room(
 
     await manager.connect(room_id, websocket)
 
-    await manager.broadcast(
-        room_id,
-        {
-            "type": "user_joined",
-            "room_id": room_id,
-            "user_id": current_user.id,
-            "role": current_user.role,
-            "message": f"{current_user.full_name} joined the room"
-        }
-    )
-
     try:
+        await manager.broadcast(
+            room_id,
+            {
+                "type": "user_joined",
+                "room_id": room_id,
+                "user_id": current_user.id,
+                "role": current_user.role,
+                "message": f"{current_user.full_name} joined the room"
+            }
+        )
+
         while True:
             data = await websocket.receive_text()
 
@@ -100,7 +110,7 @@ async def websocket_room(
             message_type = message.get("type")
             content = message.get("content")
 
-            if message_type not in ["code_update", "chat_message"]:
+            if message_type not in ["code_update", "chat_message", "question_selected"]:
                 await websocket.send_json(
                     {
                         "type": "error",
@@ -109,7 +119,28 @@ async def websocket_room(
                 )
                 continue
 
-            if message_type == "code_update":
+            if message_type == "question_selected":
+                if current_user.role != "interviewer" or current_user.id != room.user_id:
+                    await websocket.send_json(
+                        {
+                            "type": "error",
+                            "message": "Only the interviewer who owns this room can select a question"
+                        }
+                    )
+                    continue
+
+                await manager.broadcast(
+                    room_id,
+                    {
+                        "type": message_type,
+                        "room_id": room_id,
+                        "user_id": current_user.id,
+                        "role": current_user.role,
+                        "content": content
+                    }
+                )
+
+            elif message_type == "code_update":
                 language = message.get("language", "python")
 
                 code_data = CodeSessionCreate(
@@ -144,6 +175,8 @@ async def websocket_room(
                 )
 
     except WebSocketDisconnect:
+        pass
+    finally:
         manager.disconnect(room_id, websocket)
 
         await manager.broadcast(

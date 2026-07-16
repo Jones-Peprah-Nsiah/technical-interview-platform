@@ -33,6 +33,9 @@ export const api = {
   getRoom: (roomId) => request(`/rooms/${roomId}`),
   joinRoom: (payload) => request("/join-room", { method: "POST", body: payload }),
   getParticipants: (roomId) => request(`/rooms/${roomId}/participants`),
+  listQuestions: (roomId) => request(`/rooms/${roomId}/questions`),
+  createQuestion: (roomId, payload, token) =>
+    request(`/rooms/${roomId}/questions`, { method: "POST", body: payload, token }),
 };
 
 export const WS_BASE_URL = "ws://127.0.0.1:8001";
