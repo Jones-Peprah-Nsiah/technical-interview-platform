@@ -26,6 +26,7 @@ function Room({ roomId, token, user, onLeave }) {
   const [addingQuestion, setAddingQuestion] = useState(false);
 
   const [output, setOutput] = useState(null);
+  const [ranBy, setRanBy] = useState("");
   const [running, setRunning] = useState(false);
   const [runError, setRunError] = useState("");
 
@@ -90,6 +91,11 @@ function Room({ roomId, token, user, onLeave }) {
 
         case "question_selected":
           setActiveQuestion(message.content ?? null);
+          break;
+
+        case "run_output":
+          setOutput(message.content ?? null);
+          setRanBy(message.user_id === user.id ? "You" : `User #${message.user_id}`);
           break;
 
         case "chat_message":
@@ -158,7 +164,7 @@ function Room({ roomId, token, user, onLeave }) {
 
     try {
       const result = await api.executeCode({ code, language }, token);
-      setOutput(result);
+      sendMessage({ type: "run_output", content: result });
     } catch (err) {
       setRunError(err.message || "Could not run code");
     } finally {
@@ -269,13 +275,17 @@ function Room({ roomId, token, user, onLeave }) {
           {(output || runError) && (
             <div className="output-panel">
               <div className="output-panel-header">
-                <span>Output {output?.status ? `— ${output.status}` : ""}</span>
+                <span>
+                  Output {output?.status ? `— ${output.status}` : ""}
+                  {ranBy && ` (run by ${ranBy})`}
+                </span>
                 <button
                   type="button"
                   className="link-button"
                   onClick={() => {
                     setOutput(null);
                     setRunError("");
+                    setRanBy("");
                   }}
                 >
                   Clear

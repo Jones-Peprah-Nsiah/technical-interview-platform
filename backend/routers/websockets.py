@@ -110,7 +110,7 @@ async def websocket_room(
             message_type = message.get("type")
             content = message.get("content")
 
-            if message_type not in ["code_update", "chat_message", "question_selected"]:
+            if message_type not in ["code_update", "chat_message", "question_selected", "run_output"]:
                 await websocket.send_json(
                     {
                         "type": "error",
