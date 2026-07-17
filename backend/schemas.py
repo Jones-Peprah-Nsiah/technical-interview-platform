@@ -40,9 +40,7 @@ class RoomResponse(BaseModel):
 
 
 class ParticipantCreate(BaseModel):
-    user_id: int
     room_id: int
-    role: str
 
 
 class ParticipantResponse(BaseModel):

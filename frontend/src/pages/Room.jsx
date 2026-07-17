@@ -227,6 +227,18 @@ function Room({ roomId, token, user, onLeave }) {
     sendMessage({ type: "question_selected", content: question });
   }
 
+  async function handleDeleteQuestion(questionId) {
+    setQuestionError("");
+
+    try {
+      await api.deleteQuestion(questionId, token);
+      setQuestions((prev) => prev.filter((q) => q.id !== questionId));
+      setActiveQuestion((prev) => (prev?.id === questionId ? null : prev));
+    } catch (err) {
+      setQuestionError(err.message || "Could not delete question");
+    }
+  }
+
   return (
     <div className="room-page">
       <header className="room-header">
@@ -246,18 +258,6 @@ function Room({ roomId, token, user, onLeave }) {
 
       <div className="room-body">
         <section className="editor-panel">
-          {activeQuestion && (
-            <div className="active-question">
-              <div className="active-question-header">
-                <strong>{activeQuestion.title}</strong>
-                <span className={`badge difficulty-${activeQuestion.difficulty}`}>
-                  {activeQuestion.difficulty}
-                </span>
-              </div>
-              <p>{activeQuestion.description}</p>
-            </div>
-          )}
-
           <div className="editor-toolbar">
             <span>Live shared editor</span>
             <div className="editor-toolbar-right">
@@ -292,6 +292,18 @@ function Room({ roomId, token, user, onLeave }) {
               }}
             />
           </div>
+
+          {activeQuestion && (
+            <div className="active-question">
+              <div className="active-question-header">
+                <strong>{activeQuestion.title}</strong>
+                <span className={`badge difficulty-${activeQuestion.difficulty}`}>
+                  {activeQuestion.difficulty}
+                </span>
+              </div>
+              <p>{activeQuestion.description}</p>
+            </div>
+          )}
 
           {(output || runError) && (
             <div className="output-panel">
@@ -343,14 +355,25 @@ function Room({ roomId, token, user, onLeave }) {
                     </span>
                   </div>
                   <p className="question-item-description">{q.description}</p>
-                  {canManageQuestions && activeQuestion?.id !== q.id && (
-                    <button
-                      type="button"
-                      className="secondary-button small"
-                      onClick={() => handleSelectQuestion(q)}
-                    >
-                      Use this question
-                    </button>
+                  {canManageQuestions && (
+                    <div className="question-item-actions">
+                      {activeQuestion?.id !== q.id && (
+                        <button
+                          type="button"
+                          className="secondary-button small"
+                          onClick={() => handleSelectQuestion(q)}
+                        >
+                          Use this question
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className="link-button danger"
+                        onClick={() => handleDeleteQuestion(q.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   )}
                 </li>
               ))}

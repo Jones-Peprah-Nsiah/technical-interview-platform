@@ -9,7 +9,6 @@ function Dashboard({ token, user, onEnterRoom, onLogout }) {
   const [creating, setCreating] = useState(false);
 
   const [joinRoomId, setJoinRoomId] = useState("");
-  const [joinRole, setJoinRole] = useState("candidate");
   const [joinError, setJoinError] = useState("");
   const [joining, setJoining] = useState(false);
 
@@ -42,7 +41,7 @@ function Dashboard({ token, user, onEnterRoom, onLogout }) {
       await api.getRoom(roomId);
 
       try {
-        await api.joinRoom({ user_id: user.id, room_id: roomId, role: joinRole });
+        await api.joinRoom({ room_id: roomId }, token);
       } catch (err) {
         // If already joined, that's fine — just enter the room
         if (!/already joined/i.test(err.message || "")) {
@@ -143,13 +142,6 @@ function Dashboard({ token, user, onEnterRoom, onLogout }) {
                   onChange={(e) => setJoinRoomId(e.target.value)}
                   required
                 />
-              </div>
-              <div className="input-group">
-                <label>Join as</label>
-                <select value={joinRole} onChange={(e) => setJoinRole(e.target.value)}>
-                  <option value="candidate">Candidate</option>
-                  <option value="interviewer">Interviewer</option>
-                </select>
               </div>
               <button type="submit" disabled={joining}>
                 {joining ? "Joining..." : "Join room"}

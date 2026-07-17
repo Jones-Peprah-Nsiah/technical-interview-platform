@@ -61,11 +61,11 @@ def delete_room(db: Session, room_id: int):
     return room
 
 
-def join_room(db: Session, participant):
+def join_room(db: Session, participant, user_id: int, role: str):
     new_participant = Participant(
-        user_id=participant.user_id,
+        user_id=user_id,
         room_id=participant.room_id,
-        role=participant.role
+        role=role
     )
 
     db.add(new_participant)

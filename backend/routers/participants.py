@@ -4,12 +4,12 @@ from sqlalchemy.orm import Session
 from database import get_db
 from schemas import ParticipantCreate, ParticipantResponse
 from crud import (
-    get_user_by_id,
     get_room_by_id,
     get_participant,
     join_room,
     get_room_participants
 )
+from auth import get_current_user
 
 
 router = APIRouter(tags=["Participants"])
@@ -18,21 +18,9 @@ router = APIRouter(tags=["Participants"])
 @router.post("/join-room", response_model=ParticipantResponse)
 def join_interview_room(
     participant: ParticipantCreate,
+    current_user=Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    allowed_roles = ["candidate", "interviewer"]
-
-    if participant.role not in allowed_roles:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid role. Use candidate or interviewer"
-        )
-
-    user = get_user_by_id(db, participant.user_id)
-
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
     room = get_room_by_id(db, participant.room_id)
 
     if not room:
@@ -40,7 +28,7 @@ def join_interview_room(
 
     existing_participant = get_participant(
         db,
-        participant.user_id,
+        current_user.id,
         participant.room_id
     )
 
@@ -50,7 +38,7 @@ def join_interview_room(
             detail="User already joined this room"
         )
 
-    return join_room(db, participant)
+    return join_room(db, participant, current_user.id, current_user.role)
 
 
 @router.get(

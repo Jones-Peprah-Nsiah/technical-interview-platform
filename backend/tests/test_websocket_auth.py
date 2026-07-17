@@ -59,7 +59,7 @@ def test_websocket_participant_can_connect(client, monkeypatch):
     candidate_token = register_and_login(client, "candidate@example.com")
     resp = client.post(
         "/join-room",
-        json={"user_id": 2, "room_id": room_id, "role": "candidate"},
+        json={"room_id": room_id},
         headers={"Authorization": f"Bearer {candidate_token}"},
     )
     assert resp.status_code == 200
@@ -67,6 +67,26 @@ def test_websocket_participant_can_connect(client, monkeypatch):
     with client.websocket_connect(f"/ws/rooms/{room_id}?token={candidate_token}") as ws:
         message = ws.receive_json()
         assert message["type"] == "user_joined"
+
+
+def test_join_room_role_comes_from_account_not_client_input(client, monkeypatch):
+    monkeypatch.setattr("routers.users.INTERVIEWER_INVITE_CODE", "interviewer-code")
+    owner_token = register_and_login(client, "owner6@example.com", invite_code="interviewer-code")
+    room_id = create_room(client, owner_token)
+
+    candidate_token = register_and_login(client, "candidate3@example.com")
+
+    # Even if a client tries to smuggle a role/user_id in the body, the
+    # server must derive both from the authenticated JWT, not trust input.
+    resp = client.post(
+        "/join-room",
+        json={"room_id": room_id, "role": "interviewer", "user_id": 999},
+        headers={"Authorization": f"Bearer {candidate_token}"},
+    )
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["role"] == "candidate"
 
 
 def test_question_selected_rejected_for_non_owner(client, monkeypatch):
@@ -77,7 +97,7 @@ def test_question_selected_rejected_for_non_owner(client, monkeypatch):
     candidate_token = register_and_login(client, "candidate2@example.com")
     client.post(
         "/join-room",
-        json={"user_id": 2, "room_id": room_id, "role": "candidate"},
+        json={"room_id": room_id},
         headers={"Authorization": f"Bearer {candidate_token}"},
     )
 

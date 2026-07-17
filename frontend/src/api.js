@@ -31,11 +31,13 @@ export const api = {
   me: (token) => request("/me", { token }),
   createRoom: (payload, token) => request("/rooms", { method: "POST", body: payload, token }),
   getRoom: (roomId) => request(`/rooms/${roomId}`),
-  joinRoom: (payload) => request("/join-room", { method: "POST", body: payload }),
+  joinRoom: (payload, token) => request("/join-room", { method: "POST", body: payload, token }),
   getParticipants: (roomId) => request(`/rooms/${roomId}/participants`),
   listQuestions: (roomId) => request(`/rooms/${roomId}/questions`),
   createQuestion: (roomId, payload, token) =>
     request(`/rooms/${roomId}/questions`, { method: "POST", body: payload, token }),
+  deleteQuestion: (questionId, token) =>
+    request(`/questions/${questionId}`, { method: "DELETE", token }),
   executeCode: (payload, token) => request("/execute", { method: "POST", body: payload, token }),
   listQuestionBank: (token) => request("/question-bank", { token }),
 };
