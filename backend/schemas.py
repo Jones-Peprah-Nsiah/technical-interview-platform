@@ -83,6 +83,15 @@ class QuestionResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class QuestionBankResponse(BaseModel):
+    id: int
+    title: str
+    description: str
+    difficulty: str
+
+    class Config:
+        from_attributes = True
+
 class CodeSessionCreate(BaseModel):
     code: str
     language: str

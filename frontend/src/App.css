@@ -617,3 +617,24 @@ select {
   padding: 10px;
   font-size: 13px;
 }
+
+.bank-box {
+  margin-bottom: 14px;
+}
+
+.bank-box h4 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+}
+
+.bank-list {
+  max-height: 160px;
+}
+
+.bank-list .secondary-button.small:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

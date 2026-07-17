@@ -37,6 +37,7 @@ export const api = {
   createQuestion: (roomId, payload, token) =>
     request(`/rooms/${roomId}/questions`, { method: "POST", body: payload, token }),
   executeCode: (payload, token) => request("/execute", { method: "POST", body: payload, token }),
+  listQuestionBank: (token) => request("/question-bank", { token }),
 };
 
 export const WS_BASE_URL = "ws://127.0.0.1:8001";

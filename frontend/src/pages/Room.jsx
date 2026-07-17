@@ -24,6 +24,7 @@ function Room({ roomId, token, user, onLeave }) {
   });
   const [questionError, setQuestionError] = useState("");
   const [addingQuestion, setAddingQuestion] = useState(false);
+  const [bank, setBank] = useState([]);
 
   const [output, setOutput] = useState(null);
   const [ranBy, setRanBy] = useState("");
@@ -56,10 +57,15 @@ function Room({ roomId, token, user, onLeave }) {
       .then((data) => !cancelled && setQuestions(data))
       .catch(() => {});
 
+    api
+      .listQuestionBank(token)
+      .then((data) => !cancelled && setBank(data))
+      .catch(() => {});
+
     return () => {
       cancelled = true;
     };
-  }, [roomId]);
+  }, [roomId, token]);
 
   // Open the websocket connection
   useEffect(() => {
@@ -201,6 +207,21 @@ function Room({ roomId, token, user, onLeave }) {
     }
   }
 
+  async function handleAddFromBank(item) {
+    setQuestionError("");
+
+    try {
+      const question = await api.createQuestion(
+        roomId,
+        { title: item.title, description: item.description, difficulty: item.difficulty },
+        token
+      );
+      setQuestions((prev) => [...prev, question]);
+    } catch (err) {
+      setQuestionError(err.message || "Could not add question");
+    }
+  }
+
   function handleSelectQuestion(question) {
     setActiveQuestion(question);
     sendMessage({ type: "question_selected", content: question });
@@ -334,6 +355,35 @@ function Room({ roomId, token, user, onLeave }) {
               ))}
               {questions.length === 0 && <li className="muted">No questions yet</li>}
             </ul>
+
+            {canManageQuestions && bank.length > 0 && (
+              <div className="bank-box">
+                <h4>From the question bank</h4>
+                <ul className="questions-list bank-list">
+                  {bank.map((item) => {
+                    const alreadyAdded = questions.some((q) => q.title === item.title);
+                    return (
+                      <li key={item.id} className="question-item">
+                        <div className="question-item-main">
+                          <span>{item.title}</span>
+                          <span className={`badge difficulty-${item.difficulty}`}>
+                            {item.difficulty}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          className="secondary-button small"
+                          onClick={() => handleAddFromBank(item)}
+                          disabled={alreadyAdded}
+                        >
+                          {alreadyAdded ? "Added" : "Add to room"}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
 
             {canManageQuestions && (
               <form className="add-question-form" onSubmit={handleAddQuestion}>

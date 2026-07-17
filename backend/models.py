@@ -37,6 +37,14 @@ class Question(Base):
     description = Column(String, nullable=False)
     difficulty = Column(String, nullable=False)
 
+class QuestionBankItem(Base):
+    __tablename__ = "question_bank"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, unique=True, nullable=False)
+    description = Column(String, nullable=False)
+    difficulty = Column(String, nullable=False)
+
 class CodeSession(Base):
     __tablename__ = "code_sessions"
 

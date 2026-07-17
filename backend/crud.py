@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from models import User, Room, Participant, Question, CodeSession
+from models import User, Room, Participant, Question, QuestionBankItem, CodeSession
 from schemas import UserCreate
 from auth import hash_password
 
@@ -174,6 +174,28 @@ def get_question_by_title_and_room(db: Session, room_id: int, title: str):
         )
         .first()
     )
+
+def get_question_bank(db: Session):
+    return db.query(QuestionBankItem).all()
+
+
+def get_bank_question_by_title(db: Session, title: str):
+    return db.query(QuestionBankItem).filter(QuestionBankItem.title == title).first()
+
+
+def create_bank_question(db: Session, question):
+    new_item = QuestionBankItem(
+        title=question.title,
+        description=question.description,
+        difficulty=question.difficulty
+    )
+
+    db.add(new_item)
+    db.commit()
+    db.refresh(new_item)
+
+    return new_item
+
 
 def get_code_session_by_room(db: Session, room_id: int):
     return db.query(CodeSession).filter(CodeSession.room_id == room_id).first()
