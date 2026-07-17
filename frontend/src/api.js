@@ -1,4 +1,4 @@
-const BASE_URL = "http://127.0.0.1:8001";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8001";
 
 async function request(path, { method = "GET", body, token } = {}) {
   const headers = { "Content-Type": "application/json" };
@@ -40,4 +40,4 @@ export const api = {
   listQuestionBank: (token) => request("/question-bank", { token }),
 };
 
-export const WS_BASE_URL = "ws://127.0.0.1:8001";
+export const WS_BASE_URL = import.meta.env.VITE_WS_URL || "ws://127.0.0.1:8001";
