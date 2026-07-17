@@ -342,6 +342,7 @@ function Room({ roomId, token, user, onLeave }) {
                       {q.difficulty}
                     </span>
                   </div>
+                  <p className="question-item-description">{q.description}</p>
                   {canManageQuestions && activeQuestion?.id !== q.id && (
                     <button
                       type="button"
@@ -370,6 +371,7 @@ function Room({ roomId, token, user, onLeave }) {
                             {item.difficulty}
                           </span>
                         </div>
+                        <p className="question-item-description">{item.description}</p>
                         <button
                           type="button"
                           className="secondary-button small"

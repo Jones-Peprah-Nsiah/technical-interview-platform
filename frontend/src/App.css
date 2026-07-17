@@ -597,6 +597,13 @@ select {
   gap: 8px;
 }
 
+.question-item-description {
+  margin: 6px 0 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #94a3b8;
+}
+
 .add-question-form {
   display: flex;
   flex-direction: column;

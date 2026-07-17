@@ -5,8 +5,10 @@ from config import ALLOWED_ORIGINS
 from database import engine
 from models import Base
 from routers import users, rooms, participants, questions, websockets, code_sessions, execution, question_bank
+from seed_question_bank import seed as seed_question_bank
 
 Base.metadata.create_all(bind=engine)
+seed_question_bank()
 
 app = FastAPI()
 

@@ -1,13 +1,11 @@
-"""One-off script to seed the shared question bank with a starter set of
-classic, generically-worded algorithm problems. Safe to re-run — skips any
-title that already exists.
-
-Usage: python3 seed_question_bank.py
+"""Seeds the shared question bank with a starter set of classic,
+generically-worded algorithm problems. Safe to call repeatedly — skips any
+title that already exists. Called automatically on backend startup (see
+main.py) so it runs the same way in every environment, and can also be run
+standalone: python3 seed_question_bank.py
 """
 from database import SessionLocal, Base, engine
 from models import QuestionBankItem
-
-Base.metadata.create_all(bind=engine)
 
 
 QUESTIONS = [
@@ -163,6 +161,7 @@ QUESTIONS = [
 
 
 def seed():
+    Base.metadata.create_all(bind=engine)
     db = SessionLocal()
 
     try:
