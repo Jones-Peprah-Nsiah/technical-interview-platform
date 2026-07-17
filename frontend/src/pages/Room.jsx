@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import Editor from "@monaco-editor/react";
 import { WS_BASE_URL, api } from "../api";
 
 const LANGUAGES = ["python", "javascript", "typescript", "java", "cpp", "go"];
@@ -23,6 +24,10 @@ function Room({ roomId, token, user, onLeave }) {
   });
   const [questionError, setQuestionError] = useState("");
   const [addingQuestion, setAddingQuestion] = useState(false);
+
+  const [output, setOutput] = useState(null);
+  const [running, setRunning] = useState(false);
+  const [runError, setRunError] = useState("");
 
   const socketRef = useRef(null);
   const skipNextBroadcastRef = useRef(false);
@@ -134,16 +139,31 @@ function Room({ roomId, token, user, onLeave }) {
     }
   }
 
-  function handleCodeChange(e) {
-    const value = e.target.value;
-    setCode(value);
+  function handleCodeChange(value) {
+    const newValue = value ?? "";
+    setCode(newValue);
 
     if (skipNextBroadcastRef.current) {
       skipNextBroadcastRef.current = false;
       return;
     }
 
-    sendMessage({ type: "code_update", content: value, language });
+    sendMessage({ type: "code_update", content: newValue, language });
+  }
+
+  async function handleRun() {
+    setRunning(true);
+    setRunError("");
+    setOutput(null);
+
+    try {
+      const result = await api.executeCode({ code, language }, token);
+      setOutput(result);
+    } catch (err) {
+      setRunError(err.message || "Could not run code");
+    } finally {
+      setRunning(false);
+    }
   }
 
   function handleLanguageChange(e) {
@@ -213,21 +233,65 @@ function Room({ roomId, token, user, onLeave }) {
 
           <div className="editor-toolbar">
             <span>Live shared editor</span>
-            <select value={language} onChange={handleLanguageChange}>
-              {LANGUAGES.map((lang) => (
-                <option key={lang} value={lang}>
-                  {lang}
-                </option>
-              ))}
-            </select>
+            <div className="editor-toolbar-right">
+              <select value={language} onChange={handleLanguageChange}>
+                {LANGUAGES.map((lang) => (
+                  <option key={lang} value={lang}>
+                    {lang}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className="secondary-button small"
+                onClick={handleRun}
+                disabled={running}
+              >
+                {running ? "Running..." : "Run"}
+              </button>
+            </div>
           </div>
-          <textarea
-            className="code-editor"
-            spellCheck={false}
-            value={code}
-            onChange={handleCodeChange}
-            placeholder="// Start typing — everyone in this room sees it live"
-          />
+
+          <div className="monaco-wrapper">
+            <Editor
+              language={language}
+              theme="vs-dark"
+              value={code}
+              onChange={handleCodeChange}
+              options={{
+                minimap: { enabled: false },
+                fontSize: 14,
+                automaticLayout: true,
+              }}
+            />
+          </div>
+
+          {(output || runError) && (
+            <div className="output-panel">
+              <div className="output-panel-header">
+                <span>Output {output?.status ? `— ${output.status}` : ""}</span>
+                <button
+                  type="button"
+                  className="link-button"
+                  onClick={() => {
+                    setOutput(null);
+                    setRunError("");
+                  }}
+                >
+                  Clear
+                </button>
+              </div>
+              {runError && <pre className="output-stderr">{runError}</pre>}
+              {output?.compile_output && (
+                <pre className="output-stderr">{output.compile_output}</pre>
+              )}
+              {output?.stdout && <pre className="output-stdout">{output.stdout}</pre>}
+              {output?.stderr && <pre className="output-stderr">{output.stderr}</pre>}
+              {output && !output.stdout && !output.stderr && !output.compile_output && (
+                <pre className="output-stdout muted">(no output)</pre>
+              )}
+            </div>
+          )}
         </section>
 
         <aside className="side-panel">

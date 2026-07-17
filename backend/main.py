@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from database import engine
 from models import Base
-from routers import users, rooms, participants, questions, websockets, code_sessions
+from routers import users, rooms, participants, questions, websockets, code_sessions, execution
 
 Base.metadata.create_all(bind=engine)
 
@@ -26,6 +26,7 @@ app.include_router(participants.router)
 app.include_router(questions.router)
 app.include_router(websockets.router)
 app.include_router(code_sessions.router)
+app.include_router(execution.router)
 
 
 @app.get("/")
