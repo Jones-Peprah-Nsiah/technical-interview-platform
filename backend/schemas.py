@@ -48,6 +48,8 @@ class ParticipantResponse(BaseModel):
     user_id: int
     room_id: int
     role: str
+    full_name: str
+    email: EmailStr
 
     class Config:
         from_attributes = True

@@ -170,6 +170,7 @@ async def websocket_room(
                         "room_id": room_id,
                         "user_id": current_user.id,
                         "role": current_user.role,
+                        "full_name": current_user.full_name,
                         "content": content
                     }
                 )

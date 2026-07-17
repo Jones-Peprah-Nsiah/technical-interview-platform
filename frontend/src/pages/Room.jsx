@@ -101,7 +101,7 @@ function Room({ roomId, token, user, onLeave }) {
 
         case "run_output":
           setOutput(message.content ?? null);
-          setRanBy(message.user_id === user.id ? "You" : `User #${message.user_id}`);
+          setRanBy(message.user_id === user.id ? "You" : message.full_name || `User #${message.user_id}`);
           break;
 
         case "chat_message":
@@ -110,6 +110,7 @@ function Room({ roomId, token, user, onLeave }) {
             {
               kind: "chat",
               userId: message.user_id,
+              fullName: message.full_name,
               role: message.role,
               content: message.content,
               mine: message.user_id === user.id,
@@ -455,7 +456,9 @@ function Room({ roomId, token, user, onLeave }) {
             <ul>
               {participants.map((p) => (
                 <li key={p.id}>
-                  User #{p.user_id} <span className="badge">{p.role}</span>
+                  {p.full_name}
+                  {p.user_id === user.id && " (you)"}{" "}
+                  <span className="badge">{p.role}</span>
                 </li>
               ))}
               {participants.length === 0 && <li className="muted">None yet</li>}
@@ -476,7 +479,7 @@ function Room({ roomId, token, user, onLeave }) {
                     className={`chat-bubble ${event.mine ? "mine" : ""}`}
                   >
                     <span className="chat-meta">
-                      {event.mine ? "You" : `User #${event.userId}`} ·{" "}
+                      {event.mine ? "You" : event.fullName || `User #${event.userId}`} ·{" "}
                       {event.role}
                     </span>
                     {event.content}
