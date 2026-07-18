@@ -17,8 +17,16 @@ To try it as an interviewer, register with invite code `interview-me-2026` (or l
 **Dashboard — create or join a room**
 ![Dashboard](screenshots/dashboard.png)
 
-**A live interview room — shared editor, active question, code execution output, chat, and participants**
-![Interview room](screenshots/room.png)
+**Setting up a room** — the interviewer picks a question from the bank and can delete it if needed
+![Room setup](screenshots/room-setup.png)
+
+**Real-time sync, from both sides of the same session** — the interviewer's screen (left) and the candidate's screen (right) update live as code is typed, chat messages are sent, and code is run
+<table>
+<tr>
+<td><img src="screenshots/room-interviewer-view.png" alt="Interviewer's live view of the room"></td>
+<td><img src="screenshots/room-candidate-live.png" alt="Candidate's live view of the same room"></td>
+</tr>
+</table>
 
 ---
 
@@ -104,7 +112,7 @@ pip install -r requirements-dev.txt
 python3 -m pytest tests/ -v
 ```
 
-19 tests covering password hashing/JWT round-trips, registration and invite-code role assignment, login/`/me` auth checks, and the WebSocket connection authorization gate — run against an isolated temporary SQLite database, never your real dev/production data.
+20 tests covering password hashing/JWT round-trips, registration and invite-code role assignment, login/`/me` auth checks, and the WebSocket connection authorization gate (including that a participant's role always comes from their account, never client input) — run against an isolated temporary SQLite database, never your real dev/production data.
 
 ## Deployment
 
